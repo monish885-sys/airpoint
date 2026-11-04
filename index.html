@@ -94,6 +94,11 @@
       color: var(--mist);
     }
 
+    .brand #hand-btn {
+      margin-top: 18px;
+      pointer-events: auto;
+    }
+
     .side {
       justify-self: end;
       display: flex;
@@ -181,9 +186,9 @@
     <div class="brand">
       <h1>Airpoint</h1>
       <p>Pinch to tap and drag. Open to release. Hold still for a second to dwell-click.</p>
+      <button type="button" id="hand-btn">Enable hand control</button>
     </div>
     <div class="side">
-      <button type="button" id="hand-btn">Enable hand control</button>
       <div class="stats">
         Touches
         <strong id="touch-count">0</strong>
