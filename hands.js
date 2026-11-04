@@ -40,21 +40,16 @@ const DWELL_MOVE = 28;
 const CLICK_COOLDOWN_DIST = 80;
 
 function placeHandBtn() {
-  if (!handBtn || !handBtn.elt) return;
-  const margin = 28;
-  const w = handBtn.elt.offsetWidth || 200;
-  handBtn.position(windowWidth - w - margin, margin);
+  // Button lives in the HTML HUD — no absolute repositioning needed
 }
 
-function initHands() {
-  handBtn = createButton("Enable hand control");
-  handBtn.id("hand-btn");
-  placeHandBtn();
-
-  handBtn.mousePressed(() => {
+function wireHandButton(el) {
+  if (!el || el.dataset.wired === "1") return;
+  el.dataset.wired = "1";
+  el.addEventListener("click", () => {
     startAudio();
-    handBtn.html("Starting camera…");
-    handBtn.attribute("disabled", true);
+    el.textContent = "Starting camera…";
+    el.disabled = true;
 
     handVideo = createCapture(VIDEO, { flipped: true }, () => {
       handModel = ml5.handPose({ maxHands: 1, flipped: true }, () => {
@@ -62,7 +57,7 @@ function initHands() {
           handList = Array.isArray(results) ? results : [];
         });
         handsOn = true;
-        handBtn.hide();
+        el.style.display = "none";
         const hint = document.getElementById("hint");
         if (hint) {
           hint.textContent =
@@ -75,6 +70,20 @@ function initHands() {
     handVideo.size(640, 480);
     handVideo.hide();
   });
+}
+
+function initHands() {
+  // Prefer the designed HTML button in the HUD
+  const existing = document.getElementById("hand-btn");
+  if (existing) {
+    handBtn = { elt: existing, hide() { existing.style.display = "none"; } };
+    wireHandButton(existing);
+    return;
+  }
+
+  handBtn = createButton("Enable hand control");
+  handBtn.id("hand-btn");
+  wireHandButton(handBtn.elt);
 }
 
 function handFrame() {

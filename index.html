@@ -94,8 +94,16 @@
       color: var(--mist);
     }
 
-    .stats {
+    .side {
       justify-self: end;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .stats {
       text-align: right;
       font-size: 12px;
       letter-spacing: 0.08em;
@@ -120,7 +128,9 @@
     }
 
     #hand-btn {
-      position: fixed !important;
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
       z-index: 10;
       pointer-events: auto;
       border: none;
@@ -134,12 +144,17 @@
       background: var(--citrus);
       color: var(--ink);
       box-shadow: 0 10px 40px rgba(228, 243, 91, 0.25);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
     }
 
     #hand-btn:hover {
       transform: translateY(-1px);
       box-shadow: 0 14px 44px rgba(228, 243, 91, 0.35);
+    }
+
+    #hand-btn:disabled {
+      opacity: 0.7;
+      cursor: wait;
     }
 
     #hint {
@@ -167,9 +182,12 @@
       <h1>Airpoint</h1>
       <p>Pinch to tap and drag. Open to release. Hold still for a second to dwell-click.</p>
     </div>
-    <div class="stats">
-      Touches
-      <strong id="touch-count">0</strong>
+    <div class="side">
+      <button type="button" id="hand-btn">Enable hand control</button>
+      <div class="stats">
+        Touches
+        <strong id="touch-count">0</strong>
+      </div>
     </div>
   </div>
   <div id="hint">Enable hand control, then move the midpoint of your thumb and index tip across the field.</div>
