@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Airpoint — Hand Control</title>
+  <meta name="description" content="Control a canvas with pinch, drag, and dwell gestures using your webcam and ml5 handPose." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #08131a;
+      --fog: #d7ece4;
+      --mist: #8fb3a8;
+      --citrus: #e4f35b;
+      --coral: #ff6b4a;
+      --aqua: #2ec4b6;
+      --panel: rgba(8, 19, 26, 0.55);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(1200px 700px at 12% -10%, rgba(46, 196, 182, 0.22), transparent 55%),
+        radial-gradient(900px 600px at 100% 100%, rgba(255, 107, 74, 0.16), transparent 50%),
+        linear-gradient(160deg, #071018 0%, #0c1c24 45%, #10262b 100%);
+      color: var(--fog);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 1;
+    }
+
+    #stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
+    }
+
+    canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    #hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      pointer-events: none;
+      padding: clamp(18px, 3vw, 36px);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .brand {
+      max-width: min(560px, 70vw);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(42px, 7vw, 72px);
+      letter-spacing: -0.04em;
+      line-height: 0.92;
+      color: var(--fog);
+    }
+
+    .brand p {
+      margin: 12px 0 0;
+      max-width: 34ch;
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--mist);
+    }
+
+    .stats {
+      justify-self: end;
+      text-align: right;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--mist);
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(215, 236, 228, 0.12);
+      padding: 12px 14px;
+      min-width: 150px;
+    }
+
+    .stats strong {
+      display: block;
+      margin-top: 4px;
+      font-family: "Syne", sans-serif;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      text-transform: none;
+      color: var(--citrus);
+      font-weight: 700;
+    }
+
+    #hand-btn {
+      position: fixed !important;
+      z-index: 10;
+      pointer-events: auto;
+      border: none;
+      cursor: pointer;
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: var(--citrus);
+      color: var(--ink);
+      box-shadow: 0 10px 40px rgba(228, 243, 91, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #hand-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 44px rgba(228, 243, 91, 0.35);
+    }
+
+    #hint {
+      position: fixed;
+      left: clamp(18px, 3vw, 36px);
+      bottom: clamp(18px, 3vw, 36px);
+      z-index: 5;
+      pointer-events: none;
+      font-size: 13px;
+      color: var(--mist);
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(215, 236, 228, 0.1);
+      padding: 10px 14px;
+      max-width: min(420px, calc(100vw - 220px));
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+</head>
+<body>
+  <div id="stage"></div>
+  <div id="hud">
+    <div class="brand">
+      <h1>Airpoint</h1>
+      <p>Pinch to tap and drag. Open to release. Hold still for a second to dwell-click.</p>
+    </div>
+    <div class="stats">
+      Touches
+      <strong id="touch-count">0</strong>
+    </div>
+  </div>
+  <div id="hint">Enable hand control, then move the midpoint of your thumb and index tip across the field.</div>
+  <script src="sketch.js"></script>
+  <script src="hands.js"></script>
+</body>
+</html>
