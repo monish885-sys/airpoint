@@ -18,4 +18,11 @@ Open [http://127.0.0.1:8766/](http://127.0.0.1:8766/) and allow camera access.
 
 ## Share
 
-GitHub Pages: `https://laasyam12.github.io/airpoint/`
+Live demo: https://monish885-sys.github.io/airpoint/
+
+Repo: https://github.com/monish885-sys/airpoint
+
+To host under **LaasyaM12** GitHub Pages instead:
+1. Sign in as `LaasyaM12`
+2. Accept the collaborator invite (or repo transfer)
+3. Enable Pages from `main` / root — URL becomes `https://laasyam12.github.io/airpoint/`
