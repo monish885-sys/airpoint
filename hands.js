@@ -73,17 +73,23 @@ function wireHandButton(el) {
 }
 
 function initHands() {
-  // Prefer the designed HTML button in the HUD
+  // Always use the HUD button — never create a second p5 button
   const existing = document.getElementById("hand-btn");
-  if (existing) {
-    handBtn = { elt: existing, hide() { existing.style.display = "none"; } };
-    wireHandButton(existing);
+  if (!existing) {
+    console.error("Airpoint: #hand-btn missing from the page");
     return;
   }
-
-  handBtn = createButton("Enable hand control");
-  handBtn.id("hand-btn");
-  wireHandButton(handBtn.elt);
+  // Remove any leftover duplicate buttons from older builds
+  document.querySelectorAll("button#hand-btn").forEach((btn, i) => {
+    if (i > 0) btn.remove();
+  });
+  handBtn = {
+    elt: existing,
+    hide() {
+      existing.style.display = "none";
+    }
+  };
+  wireHandButton(existing);
 }
 
 function handFrame() {
